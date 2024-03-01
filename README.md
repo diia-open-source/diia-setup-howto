@@ -1,1 +1,0 @@
-# diia-setup-howto

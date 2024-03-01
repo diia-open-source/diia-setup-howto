@@ -1,0 +1,154 @@
+admin:
+  access_log_path: /tmp/admin_access.log
+  address:
+    socket_address: {address: 0.0.0.0, port_value: 9901}
+
+static_resources:
+  listeners:
+  - name: grpc_json_listener
+    address:
+      socket_address: {address: 0.0.0.0, port_value: 9090}
+    filter_chains:
+    - name: Transcoder connection
+      filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: grpc_json
+          codec_type: AUTO
+          route_config:
+            name: grpc_json_route
+            virtual_hosts:
+            - name: grpc_json_service
+              domains: ["*"]
+              routes:
+              - match: 
+                  prefix: /
+                  grpc: {}
+                  headers:
+                    - name: "service-id"
+                      exact_match: "criminal-cert"
+                route: {cluster: criminal-cert, timeout: 30s}
+              - match: 
+                  prefix: /
+                  headers:
+                    - name: "service-id"
+                      exact_match: "criminal-cert"
+                route: {cluster: criminal-cert, timeout: 30s}
+                # Specific convention, if we're going through http-grpc route then it must've been authorized higher on call chain
+                # grpc-grpc connection on the other hand is untrusted and we need to check if it's valid
+                # this config **disables** external auth filter
+                typed_per_filter_config:
+                  envoy.filters.http.ext_authz:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                    disabled: true
+              - match: 
+                  prefix: /
+                  grpc: {}
+                  headers:
+                    - name: "service-id"
+                      exact_match: "public-service-catalog"
+                route: {cluster: public-service-catalog, timeout: 30s}
+              - match: 
+                  prefix: /
+                  headers:
+                    - name: "service-id"
+                      exact_match: "public-service-catalog"
+                route: {cluster: public-service-catalog, timeout: 30s}
+                # Specific convention, if we're going through http-grpc route then it must've been authorized higher on call chain
+                # grpc-grpc connection on the other hand is untrusted and we need to check if it's valid
+                # this config **disables** external auth filter
+                typed_per_filter_config:
+                  envoy.filters.http.ext_authz:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                    disabled: true
+          http_filters:
+          - name: envoy.filters.http.grpc_json_transcoder.criminal-cert
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
+              proto_descriptor: "/transcoders/criminal-cert-service.pb"
+              services: ["ua.gov.diia.criminal_cert.CriminalCertService"]
+              convert_grpc_status: true
+              match_incoming_request_route: true
+              print_options:
+                add_whitespace: true
+                always_print_primitive_fields: true
+                always_print_enums_as_ints: false
+                preserve_proto_field_names: false
+          - name: envoy.filters.http.grpc_json_transcoder.public-service-catalog
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_json_transcoder.v3.GrpcJsonTranscoder
+              proto_descriptor: "/transcoders/public-service-catalog.pb"
+              services: ["ua.gov.diia.publicservicecatalog.PublicServiceCatalog"]
+              convert_grpc_status: true
+              match_incoming_request_route: true
+              print_options:
+                add_whitespace: true
+                always_print_primitive_fields: true
+                always_print_enums_as_ints: false
+                preserve_proto_field_names: false
+          - name: envoy.filters.http.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+  - name: auth
+    type: STRICT_DNS
+    lb_policy: ROUND_ROBIN
+    dns_lookup_family: V4_PREFERRED
+    connect_timeout: 5s
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
+    load_assignment:
+      cluster_name: auth
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: auth-grpc
+                port_value: 5441
+                ipv4_compat: true
+  - name: criminal-cert
+    type: LOGICAL_DNS
+    lb_policy: ROUND_ROBIN
+    dns_lookup_family: V4_PREFERRED
+    connect_timeout: 5s
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
+    load_assignment:
+      cluster_name: criminal-cert
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: criminal-cert-grpc
+                port_value: 5442
+                ipv4_compat: true
+  - name: public-service-catalog
+    type: LOGICAL_DNS
+    lb_policy: ROUND_ROBIN
+    dns_lookup_family: V4_PREFERRED
+    connect_timeout: 5s
+    typed_extension_protocol_options:
+      envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+        "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+        explicit_http_config:
+          http2_protocol_options: {}
+    load_assignment:
+      cluster_name: public-service-catalog
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: public-service-catalog-grpc
+                port_value: 5443
+                ipv4_compat: true

@@ -1,42 +1,42 @@
-# **How to manually clone, build and link dependencies from `@diia-inhouse` scope**
+# **How to Manually Clone, Build, and Link Dependencies from `@diia-inhouse` Scope**
 
 ## **Reason**
 
-Scope of `@diia-inhouse/<package>` is private which does not exist in public npm registry. It means that we can not install package from `@diia-inhouse/<package>` scope by just running `npm install`. Instead of installation we have to clone each required package from git repository, install it's dependencies and create `npm link`. It will create link to local copy of that package which is ready to be used as npm dependency.
+The scope of `@diia-inhouse/<package>` is private and does not exist in the public npm registry. This means that we cannot install a package from the `@diia-inhouse/<package>` scope by merely running `npm install`. Instead of installation, we have to clone each required package from the git repository, install its dependencies, and create an `npm link`. This will create a link to a local copy of that package, ready to be used as an npm dependency.
 
-## **Nested dependencies**
+## **Nested Dependencies**
 
-Each package from `@diia-inhouse/<package>` scope usually have another package from that scope as a dependency.
+Each package from `@diia-inhouse/<package>` scope typically has another package from that scope as a dependency.
 
-It means that before linking packages we have to define correct order in which we clone, install, build and link each package.
+This means that before linking packages, we have to define the correct order in which we clone, install, build, and link each package.
 
-In order to understand the issue completely let's consider simple chain of dependencies:
+To fully understand this issue, let's consider a simple chain of dependencies:
 
-`@diia-inhouse/db`->`@diia-inhouse/crypto`->`@diia-inhouse/errors`
+`@diia-inhouse/db` -> `@diia-inhouse/crypto` -> `@diia-inhouse/errors`
 
-According to that chain the linking order of dependencies is:
+According to that chain, the linking order of dependencies is:
 
 1. `@diia-inhouse/errors`
 2. `@diia-inhouse/crypto`
 3. `@diia-inhouse/db`
 
-When we consider to link specific package we have to have already linked all packages from it's `package.json`
+When we consider linking a specific package, we must already have linked all packages from its `package.json`.
 
-## **Linking process**
+## **Linking Process**
 
-Let's go and create npm link for `@diia-inhouse/errors` package
+Let's go ahead and create an npm link for the `@diia-inhouse/errors` package.
 
-### **1. Clone code from Git repository**
+### **1. Clone Code from Git Repository**
 
 ```bash
 $ git clone git@<git-repo-host>:diia-inhouse/pkg-errors.git
 ```
 
-> **_NOTE:_** packages that end with *-client are not listed as separate git repositories. You can find them prebuilt in the [clients](clients/) folder.
+> **_NOTE:_** Packages that end with *-client are not listed as separate git repositories. You can find them prebuilt in the [clients](clients/) folder.
 
-### **2. Install and use linked packages**
+### **2. Install and Use Linked Packages**
 
-As we can see according to `package.json` this package has only `devDependencies` to install and use
+As we can see according to `package.json`, this package only has `devDependencies` to install and use:
 
 ```json
 "devDependencies": {
@@ -52,9 +52,9 @@ $ cd ./pkg-errors
 $ npm link @diia-inhouse/configs @diia-inhouse/eslint-config @diia-inhouse/test @diia-inhouse/types
 ```
 
-Command above will install and use already linked packages.
+The command above will install and use already linked packages. 
 
-**We assume that linking process is already done for each package from list above.**
+**We assume that the linking process is already complete for each package from the list above.**
 
 ### **3. Build `@diia-inhouse/errors`**
 

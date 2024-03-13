@@ -10,10 +10,10 @@ _Please consider to install docker and docker-compose on your own for your speci
 
 For the environment, four things should be running: Envoy proxy, MongoDB replicas, Redis, and RabbitMQ.
 
-1. Copy [Envoy proxy config](backend/envoy.yaml) file
-2. Copy [Public service catalog transcoder](backend/public-service-catalog.pb) file
-3. Copy [Criminal service catalog transcoder](backend/criminal-cert-service.pb) file
-4. Copy [docker-compose](backend/docker-compose.yaml) file
+1. Copy [Envoy proxy config](./envoy.yaml) file
+2. Copy [Public service catalog transcoder](./public-service-catalog.pb) file
+3. Copy [Criminal service catalog transcoder](./criminal-cert-service.pb) file
+4. Copy [docker-compose](./docker-compose.yml) file
 5. Run the following commands from the folder containing compose file:
 ```bash
 sudo -- sh -c -e "echo '127.0.0.1	mongo1 mongo2 mongo3' >> /etc/hosts"

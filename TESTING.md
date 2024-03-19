@@ -3,7 +3,7 @@
 
 The table below holds information on test accounts for quick access.
 
-| Authentication method | Login info | Authentication sesion timeout |
+| Authentication method | Login info | Authentication session timeout |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
 | BankID / Банк НаДія            | **Personal token:** DF8BC4DB62C3F5426C1549E301600 | 3 min
 | BankID / Банк НаДія            | **Personal token:** B6378D50CD4EA09BECDFBA05606D9 | 3 min

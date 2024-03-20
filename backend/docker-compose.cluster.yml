@@ -31,11 +31,49 @@ services:
       - mongo-network
     ports:
       - 27017:27017
+    depends_on:
+      - mongo2
+      - mongo3
+    links:
+      - mongo2
+      - mongo3
     restart: always
     entrypoint:
       [
         "/usr/bin/mongod",
         "--bind_ip_all",
+        "--replSet",
+        "diia"
+      ]
+  mongo2:
+    container_name: mongo2
+    image: mongo:5
+    networks:
+      - mongo-network
+    ports:
+      - 27018:27017
+    restart: always
+    entrypoint:
+      [
+        "/usr/bin/mongod",
+        "--bind_ip_all",
+        "--replSet",
+        "diia"
+      ]
+  mongo3:
+    container_name: mongo3
+    image: mongo:5
+    networks:
+      - mongo-network
+    ports:
+      - 27019:27017
+    restart: always
+    entrypoint:
+      [
+        "/usr/bin/mongod",
+        "--bind_ip_all",
+        "--replSet",
+        "diia"
       ]
 
 networks:

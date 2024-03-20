@@ -13,13 +13,18 @@ For the environment, four things should be running: Envoy proxy, MongoDB replica
 1. Copy [Envoy proxy config](envoy.yaml) file
 2. Copy [Public service catalog transcoder](public-service-catalog.pb) file
 3. Copy [Criminal service catalog transcoder](criminal-cert-service.pb) file
-4. Copy [docker-compose](docker-compose.yml) file
+4. Copy [docker-compose](docker-compose.cluster.yml) file
 5. Run the following commands from the folder the compose file:
 
 ```bash
 sudo -- sh -c -e "echo '127.0.0.1	mongo1 mongo2 mongo3' >> /etc/hosts"
 docker-compose up -d
 docker exec mongo1 mongo --eval 'rs.initiate({_id:"diia",version:1,members:[{_id:1,host:"mongo1:27017",priority:2},{_id:2,host:"mongo2:27017",priority:1},{_id:3,host:"mongo3:27017",priority:1}]}, { force: true })'
+```
+
+If you don't want Mongo cluster in your development workflow, try simpler [file](docker-compose.yml), that way you need simply
+```
+docker-compose up -d
 ```
 
 To run a particular service, see its README file.

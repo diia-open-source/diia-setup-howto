@@ -6,6 +6,14 @@ Our main repositories have `be-<name>-service` as the naming convention. Please 
 
 ## Dependencies
 
+This system require you to have NodeJS at least 18.0 version
+Following global packages required.
+```
+npm i -g moleculer-cli ioredis eslint prettier
+```
+
+Also you should have `protoc` in the path. Download it using instructions [here](https://grpc.io/docs/protoc-installation/).
+
 This guide presents an example of setting up a Docker ecosystem to run services locally. Please consider installing Docker and Docker-compose individually for your specific OS; this is beyond the scope of the current instructions. [How to install Docker](https://docs.docker.com/engine/install), [How to install docker-compose](https://docs.docker.com/compose/install/). 
 
 For the environment, four things should be running: Envoy proxy, MongoDB replicas, Redis, and RabbitMQ.
